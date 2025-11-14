@@ -1,0 +1,44 @@
+// *********************************************************************
+// *                       ESP32 / ESP-WROOM-32                        *
+// *        Complementary and symmetrical PWM - 180° phase shifted     *
+// *       using the MCPWM module (Motor Control PWM Peripheral)       *
+// *                   Simplified for 20kHz Fixed PWM                  *
+// *********************************************************************
+
+#include "driver/mcpwm.h"
+
+#define PWM_FREQ 20000  // Target frequency: 20 kHz
+#define PWM_PIN_A 13    // PWM output A
+#define PWM_PIN_B 12    // PWM output B (inverted output)
+
+// Global PWM configuration structure
+mcpwm_config_t pwm_config;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Starting 20 kHz complementary PWM...");
+
+  // Initialize GPIOs for MCPWM outputs
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, PWM_PIN_A);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, PWM_PIN_B);
+
+  // Invert output B to get 180° phase shift
+  GPIO.func_out_sel_cfg[PWM_PIN_B].inv_sel = 1;
+
+  // Configure MCPWM parameters
+  pwm_config.frequency = PWM_FREQ;           // 20 kHz
+  pwm_config.cmpr_a = 50.0;                  // 50% duty cycle on PWMxA
+  pwm_config.cmpr_b = 50.0;                  // 50% duty cycle (inverted for PWMxB)
+  pwm_config.counter_mode = MCPWM_UP_DOWN_COUNTER;  // Center-aligned symmetrical PWM
+  pwm_config.duty_mode = MCPWM_DUTY_MODE_0;         // Active high duty
+
+  // Initialize MCPWM with configuration
+  mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);
+
+  Serial.println("PWM setup complete at 20 kHz, 50% duty, 180° phase shift.");
+}
+
+void loop() {
+  // Fixed 20 kHz complementary PWM — nothing to update
+  delay(1000);
+}

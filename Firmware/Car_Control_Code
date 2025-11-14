@@ -1,0 +1,166 @@
+// *********************************************************************
+// *                       ESP32 / ESP-WROOM-32                        *
+// *        Complementary and symmetrical PWM - 180° phase shifted     *
+// *       using the MCPWM module (Motor Control PWM Peripheral)       *
+// *                   Simplified for 20kHz Fixed PWM                  *
+// *                 + Relay control via Bluetooth Terminal           *
+// *********************************************************************
+
+#include "driver/mcpwm.h"
+#include "BluetoothSerial.h"   // ESP32 built-in Bluetooth Serial (classic BT)
+
+/* ----------------------- PWM settings (unchanged) ------------------ */
+#define PWM_FREQ 20000  // Target frequency: 20 kHz
+#define PWM_PIN_A 13    // PWM output A
+#define PWM_PIN_B 12    // PWM output B (inverted output)
+
+mcpwm_config_t pwm_config;
+
+/* ----------------------- Relay pin definitions --------------------- */
+/* Change these to the GPIOs you actually wired to the relay module.
+   Note: Relay modules usually expect a transistor/driver; these pins
+   directly drive the relay V-IN (or transistor input). */
+const uint8_t RELAY_R1 = 14; // example pin for R1
+const uint8_t RELAY_R2 = 27; // example pin for R2
+const uint8_t RELAY_R3 = 26; // example pin for R3
+const uint8_t RELAY_R4 = 25; // example pin for R4
+
+/* Active LOW relays: LOW = ON, HIGH = OFF */
+inline void relayOn(uint8_t pin)  { digitalWrite(pin, LOW); }
+inline void relayOff(uint8_t pin) { digitalWrite(pin, HIGH); }
+
+/* ----------------------- Bluetooth Serial -------------------------- */
+BluetoothSerial SerialBT;
+
+/* Track the logical drive state to avoid repeatedly re-writing pins */
+enum DriveState { STATE_STOP, STATE_RIGHT, STATE_LEFT, STATE_REVERSE };
+DriveState currentState = STATE_STOP;
+
+/* ----------------------- Helper functions -------------------------- */
+void setRelaysRight() {
+  // Right: R1,R2 OFF and R3,R4 ON
+  relayOff(RELAY_R1);
+  relayOff(RELAY_R2);
+  relayOn(RELAY_R3);
+  relayOn(RELAY_R4);
+  currentState = STATE_RIGHT;
+}
+
+void setRelaysLeft() {
+  // Left: R1,R2 ON and R3,R4 OFF
+  relayOn(RELAY_R1);
+  relayOn(RELAY_R2);
+  relayOff(RELAY_R3);
+  relayOff(RELAY_R4);
+  currentState = STATE_LEFT;
+}
+
+void setRelaysReverse() {
+  // Reverse: R1,R2 ON and R3,R4 ON
+  relayOn(RELAY_R1);
+  relayOn(RELAY_R2);
+  relayOn(RELAY_R3);
+  relayOn(RELAY_R4);
+  currentState = STATE_REVERSE;
+}
+
+void setRelaysStop() {
+  // Stop: all OFF
+  relayOff(RELAY_R1);
+  relayOff(RELAY_R2);
+  relayOff(RELAY_R3);
+  relayOff(RELAY_R4);
+  currentState = STATE_STOP;
+}
+
+/* Process one-byte command from BT terminal */
+void processCommand(char c) {
+  // convert to lowercase for easier matching
+  char cmd = tolower((unsigned char)c);
+
+  if (cmd == 'r' && currentState != STATE_RIGHT) {
+    setRelaysRight();
+    Serial.println("CMD: RIGHT");
+    SerialBT.println("RIGHT");
+  } else if (cmd == 'l' && currentState != STATE_LEFT) {
+    setRelaysLeft();
+    Serial.println("CMD: LEFT");
+    SerialBT.println("LEFT");
+  } else if (cmd == 'v' && currentState != STATE_REVERSE) {
+    setRelaysReverse();
+    Serial.println("CMD: REVERSE");
+    SerialBT.println("REVERSE");
+  } else if (cmd == 's' && currentState != STATE_STOP) {
+    setRelaysStop();
+    Serial.println("CMD: STOP");
+    SerialBT.println("STOP");
+  } else {
+    // unknown or same state -> echo back for debugging
+    Serial.print("Ignored or unknown cmd: ");
+    Serial.println(cmd);
+  }
+}
+
+/* ----------------------- Setup and loop --------------------------- */
+void setup() {
+  Serial.begin(115200);
+  delay(50);
+  Serial.println("Starting 20 kHz complementary PWM + Relay control via BT");
+
+  // PWM setup (exactly as your original code)
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, PWM_PIN_A);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, PWM_PIN_B);
+
+  // Invert one output to make complementary (180°)
+  GPIO.func_out_sel_cfg[PWM_PIN_B].inv_sel = 1;
+
+  pwm_config.frequency = PWM_FREQ;           // 20 kHz
+  pwm_config.cmpr_a = 50.0;                  // 50% duty cycle on PWMxA
+  pwm_config.cmpr_b = 50.0;                  // 50% duty cycle (inverted for PWMxB)
+  pwm_config.counter_mode = MCPWM_UP_DOWN_COUNTER;  // Center-aligned symmetrical PWM
+  pwm_config.duty_mode = MCPWM_DUTY_MODE_0;         // Active high duty
+
+  mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);
+  Serial.println("PWM setup complete at 20 kHz, 50% duty, 180° phase shift.");
+
+  // Relay pins init
+  pinMode(RELAY_R1, OUTPUT);
+  pinMode(RELAY_R2, OUTPUT);
+  pinMode(RELAY_R3, OUTPUT);
+  pinMode(RELAY_R4, OUTPUT);
+
+  // Set all relays OFF initially (active LOW => HIGH to turn OFF)
+  setRelaysStop();
+
+  // Start Bluetooth serial with a device name (visible to phone)
+  if (!SerialBT.begin("ESP32-Dabble-Relays")) {
+    Serial.println("Failed to start Bluetooth");
+  } else {
+    Serial.println("Bluetooth started. Pair from phone, open Dabble Terminal.");
+  }
+
+  // Small note to user
+  Serial.println("Send characters via Bluetooth Terminal: r = Right, l = Left, v = Reverse, s = Stop");
+}
+
+void loop() {
+  // Check incoming Bluetooth bytes and handle simple single-character commands
+  while (SerialBT.available()) {
+    char c = SerialBT.read();
+    // ignore newlines/carriage returns
+    if (c == '\n' || c == '\r') continue;
+    processCommand(c);
+  }
+
+  // Optional: echo serial monitor input to BT for easier testing from PC
+  while (Serial.available()) {
+    char c = Serial.read();
+    if (c == '\n' || c == '\r') continue;
+    // forward typed char on Serial Monitor to Bluetooth device
+    SerialBT.print(c);
+  }
+
+  // keep PWM running; no other work required
+  delay(10);
+}
+
