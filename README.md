@@ -1,7 +1,7 @@
 # Custom Motor Driver
 
 A complete repository for a custom motor driver hardware + firmware project.  
-Includes schematics, BOM, PCB placeholders, and firmware examples for ESP32 (Arduino).
+Includes schematics, BOM, and firmware examples for ESP32 (Arduino).
 
 ---
 
