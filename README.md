@@ -1,80 +1,54 @@
-# Custom Motor Driver
+# 🚗 DIY Robotic Car Using Custom Motor Driver
 
-A complete repository for a custom motor driver hardware + firmware project.  
-Includes schematics, BOM, and firmware examples for ESP32 (Arduino).
+This project is a fully working **DIY robotic car** built using a **custom-designed motor driver**, breadboard prototype electronics, relays, Li-ion battery pack, and a microcontroller for speed and direction control.
 
----
-
-## 📌 Contents
-- Hardware design (schematic,Simulation, BOM)
-- Firmware for ESP32 (PWM + dead-time + direction)
-- Bench test script and wiring diagrams
-- Photos and oscilloscope captures
+The car is completely hand-assembled and tested on a breadboard, making it a great learning project for embedded systems and motor control.
 
 ---
 
-## 🔋 Supported features (typical for this repo)
-- MOSFET-based,transformer and DPDT based driver
-- PWM control (up to 20 kHz typical; depends on MOSFET/driver)
-- Dead-time insertion to avoid shoot-through
-- Current sensing (shunt + amplifier / ACS712 option)
-- Over-current and thermal protection points (fuse pads, thermistor footprints)
-- Logic-level interfacing: 3.3V (ESP32)
-- Optional gate driver footprint (IRF540 / driver IC / gate-driver isolator)
-- Connectors: power, motor, encoder inputs, UART/Serial
+## 📸 Project Photo
+
+![Robotic Car](images/car_photo.jpg)
+
+(Add your image as `images/car_photo.jpg`)
 
 ---
 
-## 📸 Project photos
-Add your images to `/images/` then reference them here:
+## 🔧 Features
 
-![Car Photo](images/Car_photo.jpg)
-![Terminal Photo](images/Terminal_photo.jpg)\
-![Schematic](images/schematic.png)
-![Waveform](images/waveform.jpg)
-
----
-
-## 🧭 Quick start (flash + basic wiring)
-1. Power OFF. Connect motor to `MOTOR+` / `MOTOR-`.  
-2. Connect DC supply to `V+` and `GND` (observe polarity). Use appropriate fuse.  
-3. Connect control MCU (ESP32) 3.3V, GND, and PWM pins to `CTRL_PWM_A` / `CTRL_PWM_B`.  
-4. Verify gate-driver power rails (if using isolated gate drivers).  
-5. Upload firmware from `/firmware/arduino/`.  
-6. Power ON the board and run bench tests at low duty to confirm direction and response.
+- Custom MOSFET-based motor driver
+- Dual-motor control (forward & reverse)
+- Relay switching and protection
+- Li-ion battery pack for power
+- ESP32/Arduino microcontroller control
+- Breadboard prototype wiring
+- PWM motor speed control
+- Compact lightweight chassis
+- Expandable for sensors (ultrasonic, IR, Bluetooth)
 
 ---
 
-## ⚠️ Safety & warnings
-- This hardware deals with high currents and potentially high voltages. Wear eye protection.  
-- Always test with a current-limited source or series resistor for first-power-up.  
-- Use proper heatsinking for MOSFETs and place fuses on supply.  
-- Double-check MOSFET orientation and gate resistors before applying power.
+## 🧩 Hardware Used
+
+- 2× DC gear motors with wheels  
+- Custom motor driver (homemade)  
+- ESP32 / Arduino (depending on your build)  
+- Breadboards  
+- Jumper wires  
+- Relays  
+- Li-ion batteries  
+- Battery holder and connectors  
+- Switches, diodes, resistors, capacitors  
 
 ---
 
-## 🗂 Files of interest
-- `hardware/BOM.csv` — bill of materials
-- `hardware/kicad/` — KiCad project (placeholder)
-- `firmware/arduino/MotorDriver_ESP32_PWM/` — ESP32 example
+## ⚙️ How It Works
+
+1. The microcontroller sends **PWM signals** to the custom motor driver.
+2. The driver controls the motors for **forward**, **reverse**, or **stop**.
+3. Relays (optional) handle switching and protection.
+4. Li-ion batteries provide portable power to the entire system.
+5. All wiring is mounted on a small car chassis.
 
 ---
 
-## 🧰 Recommended components (example)
-- MOSFETs: IRF540 / IRLZ44N / AOD4184 (choose by voltage/current)
-- Gate driver: IR2110 / TC4427 / IRS2003 / TLP250
-- Current sense: 50 mΩ shunt + INA219 / INA826 or ACS712 (hall)
-- MCU: ESP32 dev board / STM32F103 (BluePill)
-- Capacitors: low-ESR electrolytic + ceramic decoupling 
-
----
-
-## 📜 License
-MIT — see [LICENSE](LICENSE)
-
----
-
-## 🤝 Contributing
-See `CONTRIBUTING.md` for guidelines.
-
----
