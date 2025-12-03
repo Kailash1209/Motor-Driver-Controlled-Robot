@@ -13,12 +13,6 @@ The car is completely hand-assembled and tested on a breadboard, making it a gre
 ### **Title of the Project**
 **Design and Implementation of a Custom Motor Driver Using Power Electronics and Embedded Control**
 
-### **Names and Enrollment Numbers**
-- **[Your Name]** — *Enrollment No.: [Your Enrollment Number]*  
-- *(Add teammates if applicable)*
-
----
-
 ## 🧠 Introduction
 
 This project focuses on the design and development of a **custom motor driver circuit** using **power electronic components and embedded control**.  
@@ -39,20 +33,24 @@ By combining hardware circuitry with software-based logic, the project demonstra
 
 ---
 
-## 🧩 List of Components and Specifications
+## 🧩 Detailed Component Specifications
 
-| **Component** | **Specification / Rating** | **Description / Purpose** |
-|----------------|-----------------------------|----------------------------|
-| MOSFETs (Q1, Q2) | IRF540N (100 V, 33 A, Rds(on)=0.077 Ω) | Half-bridge switching devices |
-| Gate Driver IC | IR2110 | High- and low-side MOSFET driver |
-| Transformer | 10 T primary : 5 T secondary | Provides isolation and voltage step-down |
-| Diodes | Schottky Diodes (3 A, 20 V) | Fast recovery diodes for rectification |
-| Capacitors (C1–C5) | 470 µF / 25 V electrolytic | DC bus and output filtering |
-| Resistors | 10 Ω, 1 kΩ | Current limiting and biasing |
-| Microcontroller | Arduino / ESP32 | Provides PWM control at 20 kHz |
-| Power Supply | 20 V DC input | Main input voltage source |
-| Load | DC Motor / RL Load | Output motor load |
-| SPDT/DPDT Switch | – | Direction and mode control |
+| **Component**        | **Specification / Rating**                                 | **Description / Purpose**                                   |
+|----------------------|-------------------------------------------------------------|-------------------------------------------------------------|
+| MOSFETs (Q1, Q2)     | IRF540 (100V, 33A, 0.077Ω RDS(on))                          | Half-bridge switching devices                               |
+| Gate Driver IC       | TLP250 (10–35V supply, 2.5A peak output)                    | High- and low-side MOSFET gate driver                       |
+| Transformer          | 24.7VA, K = 1                                               | Provides isolation and voltage step-down                    |
+| Diodes               | Schottky Diodes (3A, 20V)                                   | Fast recovery diodes for rectification                      |
+| Capacitors (C1–C6)   | 470 µF / 25V electrolytic                                   | DC bus and output filtering                                 |
+| Resistors            | 10Ω, 1 kΩ (used in gate & current sense network)            | Current limiting and biasing                                |
+| Microcontroller      | ESP32 (PWM Generation)                                      | Provides gate pulses at 20 kHz and movement control         |
+| Power Supply         | 20V DC Input & 18V Vcc                                      | Main input voltage source                                   |
+| Load (BO Motor)      | DC Motor / RL Load (3–6V, 400 RPM)                          | Output test load                                            |
+| SPDT / DPDT Switch   | ---                                                         | Motor direction & mode control                              |
+| Wires                | ---                                                         | As required for connections                                 |
+| Breadboard           | ---                                                         | For circuit prototyping                                     |
+| Chassis              | 9×18 cm and 10×20 cm                                        | Mechanical support for car & electronics                    |
+
 
 ---
 
